@@ -25,6 +25,15 @@ module.exports = function (grunt) {
         };
 
         aws.log('ec2 associate-address --instance-id %s --public-ip %s', id, ip);
-        aws.ec2.associateAddress(params, aws.capture('Instance associated with public IP.', done));
+        var waitForParams = {
+          InstanceIds:  [id]
+        };
+        aws.ec2.waitFor('instanceRunning', waitForParams, function(err, data) {
+          if (err) {
+              console.log(err, err.stack); // an error occurred
+              return;
+          }
+          aws.ec2.associateAddress(params, aws.capture('Instance associated with public IP.', done));
+        });
     });
 };
